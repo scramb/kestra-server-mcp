@@ -1,0 +1,163 @@
+# -- Number of replicas
+replicaCount: 1
+
+image:
+  # -- Image repository
+  repository: ghcr.io/scramb/kestra-server-mcp
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Image tag (overrides appVersion from Chart.yaml)
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create a ServiceAccount
+  create: true
+  # -- ServiceAccount name
+  name: ""
+  # -- Annotations for the ServiceAccount
+  annotations: {}
+  # -- Labels for the ServiceAccount
+  labels: {}
+
+# -- Pod annotations
+podAnnotations: {}
+# -- Pod labels
+podLabels: {}
+# -- Pod security context
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+# -- Container security context
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service port
+  port: 8081
+  # -- Target port on container
+  targetPort: 8081
+  # -- Annotations for the Service
+  annotations: {}
+
+ingress:
+  # -- Enable Ingress resource
+  enabled: false
+  # -- Ingress class name
+  className: nginx
+  # -- Annotations for the Ingress
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  # -- TLS configuration
+  tls:
+    - hosts:
+        - kestra-mcp.example.com
+      secretName: kestra-mcp-tls
+  # -- Host rules
+  hosts:
+    - host: kestra-mcp.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+
+gateway:
+  # -- Enable Gateway API resources (requires Gateway Controller in cluster)
+  enabled: false
+  # -- Gateway class name
+  className: nginx
+  # -- Gateway annotations
+  annotations: {}
+  # -- Gateway listeners
+  listeners:
+    http:
+      port: 80
+      protocol: HTTP
+    https:
+      port: 443
+      protocol: HTTPS
+      tlsSecretName: kestra-mcp-tls
+  # -- HTTPRoute hostnames
+  hostnames:
+    - kestra-mcp.example.com
+
+networkPolicy:
+  # -- Enable NetworkPolicy (requires NetworkPolicy controller in cluster)
+  enabled: false
+  # -- Allowed ingress namespace labels
+  allowedNamespaces:
+    - kubernetes.io/metadata.name: default
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  # -- Enable HorizontalPodAutoscaler
+  enabled: false
+  # -- Minimum replicas
+  minReplicas: 1
+  # -- Maximum replicas
+  maxReplicas: 5
+  # -- Target CPU utilization percentage
+  targetCPUUtilizationPercentage: 80
+
+# -- Node selector for pod scheduling
+nodeSelector: {}
+# -- Tolerations for pod scheduling
+tolerations: []
+# -- Affinity for pod scheduling
+affinity: {}
+
+# Application configuration (maps to environment variables)
+config:
+  # Kestra API configuration
+  kestra:
+    apiUrl: ""
+    tenant: ""
+    verifySsl: "true"
+  # MCP server transport configuration
+  server:
+    transport: "http"
+    host: "0.0.0.0"
+    port: "8081"
+  # OIDC authentication configuration
+  oidc:
+    issuerUrl: ""
+    clientId: ""
+    authority: ""
+    jwksUri: ""
+    issuer: ""
+    scopes: "openid profile"
+
+# Sensitive values — store in an external secret or via sealed secrets.
+# These are NOT stored in the ConfigMap.
+secrets:
+  # -- Existing secret name (if set, skips creating an internal secret)
+  existingSecret: ""
+  # -- OIDC client secret (value or ref)
+  oidcClientSecret: ""
+  # -- Fernet encryption key (32 bytes, base64-url-encoded)
+  encryptionKey: ""
+
+# -- Additional environment variables
+extraEnv: []
+# extraEnv:
+#   - name: FOO
+#     value: bar

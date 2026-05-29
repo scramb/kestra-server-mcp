@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "kestra-mcp.fullname" . }}
+  labels:
+    {{- include "kestra-mcp.labels" . | nindent 4 }}
+data:
+  KESTRA_API_URL: {{ .Values.config.kestra.apiUrl | quote }}
+  KESTRA_TENANT: {{ .Values.config.kestra.tenant | quote }}
+  KESTRA_VERIFY_SSL: {{ .Values.config.kestra.verifySsl | quote }}
+  KESTRA_MCP_TRANSPORT: {{ .Values.config.server.transport | quote }}
+  KESTRA_MCP_HOST: {{ .Values.config.server.host | quote }}
+  KESTRA_MCP_PORT: {{ .Values.config.server.port | quote }}
+  OIDC_ISSUER_URL: {{ .Values.config.oidc.issuerUrl | quote }}
+  OIDC_CLIENT_ID: {{ .Values.config.oidc.clientId | quote }}
+  {{- if .Values.config.oidc.authority }}
+  OIDC_AUTHORITY: {{ .Values.config.oidc.authority | quote }}
+  {{- end }}
+  {{- if .Values.config.oidc.jwksUri }}
+  OIDC_JWKS_URI: {{ .Values.config.oidc.jwksUri | quote }}
+  {{- end }}
+  {{- if .Values.config.oidc.issuer }}
+  OIDC_ISSUER: {{ .Values.config.oidc.issuer | quote }}
+  {{- end }}
+  OIDC_SCOPES: {{ .Values.config.oidc.scopes | quote }}

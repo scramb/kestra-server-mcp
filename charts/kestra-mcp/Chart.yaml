@@ -1,0 +1,16 @@
+apiVersion: v2
+name: kestra-mcp
+description: MCP server for Kestra workflow orchestration
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - kestra
+  - mcp
+  - workflow
+  - orchestration
+home: https://github.com/scramb/kestra-server-mcp
+sources:
+  - https://github.com/scramb/kestra-server-mcp
+maintainers:
+  - name: scramb

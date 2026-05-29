@@ -1,0 +1,29 @@
+# NetworkPolicy is DISABLED by default.
+# To enable: apply this file and ensure your cluster has a NetworkPolicy controller
+# (e.g. Calico, Cilium, or a cloud-provider policy engine).
+#
+# This policy denies all ingress traffic except to the MCP server port (8081)
+# from within the cluster namespace.
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: kestra-mcp
+  namespace: default
+  labels:
+    app.kubernetes.io/name: kestra-mcp
+    app.kubernetes.io/part-of: kestra-mcp
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: kestra-mcp
+  policyTypes:
+    - Ingress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: default
+      ports:
+        - protocol: TCP
+          port: 8081
