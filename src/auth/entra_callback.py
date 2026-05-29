@@ -42,8 +42,10 @@ def create_entra_callback_handler(
         session = auth_session_store.consume(entra_state)
         if session is None:
             return JSONResponse(
-                {"error": "SESSION_EXPIRED",
-                 "message": "Authentication session expired or invalid"},
+                {
+                    "error": "SESSION_EXPIRED",
+                    "message": "Authentication session expired or invalid",
+                },
                 status_code=400,
             )
 
@@ -60,8 +62,10 @@ def create_entra_callback_handler(
         if "error" in result:
             logger.error("Entra token exchange failed: %s", result.get("error"))
             return JSONResponse(
-                {"error": "ENTRA_TOKEN_EXCHANGE_FAILED",
-                 "message": result.get("error_description", "Token exchange failed")},
+                {
+                    "error": "ENTRA_TOKEN_EXCHANGE_FAILED",
+                    "message": result.get("error_description", "Token exchange failed"),
+                },
                 status_code=400,
             )
 
@@ -72,16 +76,20 @@ def create_entra_callback_handler(
             claims = validate_oidc_token(access_token, oidc)
         if not claims:
             return JSONResponse(
-                {"error": "TOKEN_VALIDATION_FAILED",
-                 "message": "Could not validate tokens from Entra"},
+                {
+                    "error": "TOKEN_VALIDATION_FAILED",
+                    "message": "Could not validate tokens from Entra",
+                },
                 status_code=400,
             )
 
         user_id = extract_user_id(claims)
         if not user_id:
             return JSONResponse(
-                {"error": "USER_IDENTITY_MISSING",
-                 "message": "Could not extract user identity from Entra tokens"},
+                {
+                    "error": "USER_IDENTITY_MISSING",
+                    "message": "Could not extract user identity from Entra tokens",
+                },
                 status_code=400,
             )
 

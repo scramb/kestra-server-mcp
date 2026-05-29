@@ -105,17 +105,13 @@ class TestAuthorizationCodeExchange:
         )
 
         # Load the auth code
-        auth_code = await provider.load_authorization_code(
-            registered_client, "our-auth-code"
-        )
+        auth_code = await provider.load_authorization_code(registered_client, "our-auth-code")
         assert auth_code is not None
         assert auth_code.entra_user_id == "entra-user-sub"
         assert auth_code.scopes == ["kestra.read"]
 
         # Exchange for tokens
-        result = await provider.exchange_authorization_code(
-            registered_client, auth_code
-        )
+        result = await provider.exchange_authorization_code(registered_client, auth_code)
         assert isinstance(result, OAuthToken)
         assert result.token_type == "Bearer"
         assert result.access_token

@@ -35,8 +35,10 @@ def build_routes(oidc: OidcConfig, token_store: TokenStore):
 
         if not user_id:
             return JSONResponse(
-                {"error": "USER_ID_REQUIRED",
-                 "message": "Provide either a Bearer token or user_id in the request body"},
+                {
+                    "error": "USER_ID_REQUIRED",
+                    "message": "Provide either a Bearer token or user_id in the request body",
+                },
                 status_code=400,
             )
 
@@ -58,42 +60,52 @@ def build_routes(oidc: OidcConfig, token_store: TokenStore):
 
         if not user_id:
             return JSONResponse(
-                {"error": "USER_ID_REQUIRED",
-                 "message": "Provide either a Bearer token or user_id in the request body"},
+                {
+                    "error": "USER_ID_REQUIRED",
+                    "message": "Provide either a Bearer token or user_id in the request body",
+                },
                 status_code=400,
             )
 
         removed = token_store.remove_token(user_id)
-        return JSONResponse({
-            "status": "removed" if removed else "not_found",
-            "user_id": user_id,
-        })
+        return JSONResponse(
+            {
+                "status": "removed" if removed else "not_found",
+                "user_id": user_id,
+            }
+        )
 
     async def auth_status_page(request: Request) -> JSONResponse:
         """Return current auth status based on Bearer token."""
         auth_header = request.headers.get("authorization", "")
         parts = auth_header.split()
         if len(parts) != 2 or parts[0].lower() != "bearer":
-            return JSONResponse({
-                "authenticated": False,
-                "message": "No valid Bearer token",
-            })
+            return JSONResponse(
+                {
+                    "authenticated": False,
+                    "message": "No valid Bearer token",
+                }
+            )
 
         claims = validate_oidc_token(parts[1], oidc)
         if not claims:
-            return JSONResponse({
-                "authenticated": False,
-                "message": "Invalid or expired token",
-            })
+            return JSONResponse(
+                {
+                    "authenticated": False,
+                    "message": "Invalid or expired token",
+                }
+            )
 
         user_id = extract_user_id(claims)
         has_token = token_store.get_token(user_id) is not None
-        return JSONResponse({
-            "authenticated": True,
-            "user_id": user_id,
-            "name": claims.get("name", ""),
-            "kestra_token_registered": has_token,
-        })
+        return JSONResponse(
+            {
+                "authenticated": True,
+                "user_id": user_id,
+                "name": claims.get("name", ""),
+                "kestra_token_registered": has_token,
+            }
+        )
 
     return {
         "store_token": store_token,

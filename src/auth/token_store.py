@@ -16,9 +16,7 @@ class TokenStore:
     """
 
     def __init__(self, encryption_key: bytes, file_path: str | Path | None = None):
-        self._fernet = Fernet(
-            __import__("base64").urlsafe_b64encode(encryption_key)
-        )
+        self._fernet = Fernet(__import__("base64").urlsafe_b64encode(encryption_key))
         self._file_path = Path(file_path) if file_path else Path(".kestra-tokens.json")
         self._lock = threading.RLock()
 

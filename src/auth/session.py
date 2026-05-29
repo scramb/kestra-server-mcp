@@ -31,18 +31,13 @@ def set_session_token_store(store: TokenStore) -> None:
 def get_current_token() -> str:
     user_id = current_user_id.get()
     if not user_id:
-        raise PermissionError(
-            "UNAUTHENTICATED: No user session. Authenticate via OIDC first."
-        )
+        raise PermissionError("UNAUTHENTICATED: No user session. Authenticate via OIDC first.")
     if _token_store is None:
-        raise PermissionError(
-            "UNAUTHENTICATED: Token store not initialized."
-        )
+        raise PermissionError("UNAUTHENTICATED: Token store not initialized.")
     token = _token_store.get_token(user_id)
     if not token:
         raise PermissionError(
-            "UNAUTHENTICATED: No Kestra token registered. "
-            "Call register_kestra_token first."
+            "UNAUTHENTICATED: No Kestra token registered. Call register_kestra_token first."
         )
     return token
 

@@ -44,13 +44,9 @@ class OidcConfig:
             client_secret = client_secret or os.getenv("ENTRA_CLIENT_SECRET", "")
 
         if not issuer_url:
-            raise ValueError(
-                "OIDC_ISSUER_URL is required (or ENTRA_TENANT_ID for backward compat)"
-            )
+            raise ValueError("OIDC_ISSUER_URL is required (or ENTRA_TENANT_ID for backward compat)")
         if not client_id:
-            raise ValueError(
-                "OIDC_CLIENT_ID is required (or ENTRA_CLIENT_ID for backward compat)"
-            )
+            raise ValueError("OIDC_CLIENT_ID is required (or ENTRA_CLIENT_ID for backward compat)")
         if not client_secret:
             raise ValueError(
                 "OIDC_CLIENT_SECRET is required (or ENTRA_CLIENT_SECRET for backward compat)"
@@ -129,9 +125,7 @@ def load_config() -> Config:
     encryption_key_b64 = _require("ENCRYPTION_KEY")
     encryption_key = _decode_encryption_key(encryption_key_b64)
 
-    return Config(
-        oidc=oidc, kestra=kestra, server=server, encryption_key=encryption_key
-    )
+    return Config(oidc=oidc, kestra=kestra, server=server, encryption_key=encryption_key)
 
 
 def _decode_encryption_key(b64_key: str) -> bytes:

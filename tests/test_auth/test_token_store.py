@@ -12,6 +12,7 @@ class TestTokenStore:
     def test_store_and_get_token(self):
         key = Fernet.generate_key()
         import base64
+
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             path = Path(f.name)
 
@@ -32,6 +33,7 @@ class TestTokenStore:
     def test_get_nonexistent_returns_none(self):
         key = Fernet.generate_key()
         import base64
+
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             path = Path(f.name)
 
@@ -47,6 +49,7 @@ class TestTokenStore:
     def test_remove_token(self):
         key = Fernet.generate_key()
         import base64
+
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             path = Path(f.name)
 
@@ -65,6 +68,7 @@ class TestTokenStore:
     def test_list_users(self):
         key = Fernet.generate_key()
         import base64
+
         with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
             path = Path(f.name)
 
@@ -86,8 +90,10 @@ class TestTokenStore:
         key1 = Fernet.generate_key()
         key2 = Fernet.generate_key()
 
-        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f1, \
-             tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f2:
+        with (
+            tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f1,
+            tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f2,
+        ):
             path1 = Path(f1.name)
             path2 = Path(f2.name)
 

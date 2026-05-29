@@ -102,9 +102,7 @@ class TestKestraClient:
             json={"id": "exec-002", "state": {"current": "CREATED"}},
         )
         async with KestraClient(kestra_config, api_token="test-token") as c:
-            result = await c.execute_flow(
-                "company.team", "myflow", inputs={"param1": "value1"}
-            )
+            result = await c.execute_flow("company.team", "myflow", inputs={"param1": "value1"})
         assert result["id"] == "exec-002"
 
     @pytest.mark.asyncio

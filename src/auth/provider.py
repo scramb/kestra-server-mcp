@@ -206,8 +206,6 @@ class EntraAuthProvider:
 
     # --- Revocation ---
 
-    async def revoke_token(
-        self, token: KestraAccessToken | KestraRefreshToken
-    ) -> None:
+    async def revoke_token(self, token: KestraAccessToken | KestraRefreshToken) -> None:
         if isinstance(token, KestraRefreshToken):
             self._refresh.revoke(token.token)
