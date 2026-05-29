@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "get_execution",
+  "description": "Retrieves execution details including state, task runs, and outputs. Requires kestra.flow.read role.",
+  "permissions": {
+    "required_roles": ["kestra.flow.read"],
+    "visible_when": "user has kestra.flow.read role"
+  },
+  "input": {
+    "type": "object",
+    "properties": {
+      "execution_id": {
+        "type": "string",
+        "description": "Execution ID (returned by execute_flow)"
+      }
+    },
+    "required": ["execution_id"]
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "id": { "type": "string", "description": "Execution ID" },
+      "namespace": { "type": "string", "description": "Flow namespace" },
+      "flow_id": { "type": "string", "description": "Flow ID" },
+      "flow_revision": { "type": "integer" },
+      "state": {
+        "type": "object",
+        "properties": {
+          "current": { "type": "string", "description": "Current execution state (CREATED, RUNNING, SUCCESS, FAILED, etc.)" },
+          "histories": { "type": "array", "description": "State transition history" },
+          "duration": { "type": "number", "description": "Duration in seconds" }
+        }
+      },
+      "task_runs": {
+        "type": "array",
+        "description": "List of task run details including outputs"
+      },
+      "url": { "type": "string", "description": "Link to Kestra UI for this execution" }
+    },
+    "required": ["id", "namespace", "flow_id", "state"]
+  },
+  "error_codes": [
+    {
+      "code": "UNAUTHENTICATED",
+      "reason": "No valid session or token expired beyond silent refresh"
+    },
+    {
+      "code": "INSUFFICIENT_PERMISSION",
+      "reason": "User lacks kestra.flow.read role"
+    },
+    {
+      "code": "NOT_FOUND",
+      "reason": "No execution with the given ID exists"
+    },
+    {
+      "code": "UPSTREAM_ERROR",
+      "reason": "Kestra API responded with error (status code mapped)"
+    }
+  ],
+  "kestra_api": {
+    "method": "GET",
+    "path": "/api/v1/executions/{execution_id}",
+    "query_params": [],
+    "auth_header": "Bearer {kestra_api_token}"
+  }
+}

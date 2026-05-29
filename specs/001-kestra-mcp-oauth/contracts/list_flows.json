@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "list_flows",
+  "description": "Lists flows visible to the user's scope. Requires kestra.flow.read role.",
+  "permissions": {
+    "required_roles": ["kestra.flow.read"],
+    "visible_when": "user has kestra.flow.read role"
+  },
+  "input": {
+    "type": "object",
+    "properties": {
+      "namespace": {
+        "type": "string",
+        "description": "Optional namespace filter. If omitted, returns flows from all accessible namespaces."
+      }
+    },
+    "required": []
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "flows": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string", "description": "Flow ID" },
+            "namespace": { "type": "string", "description": "Flow namespace" },
+            "revision": { "type": "integer", "description": "Current revision" },
+            "disabled": { "type": "boolean", "description": "Whether flow is disabled" },
+            "deleted": { "type": "boolean", "description": "Whether flow is soft-deleted" }
+          },
+          "required": ["id", "namespace"]
+        },
+        "description": "List of flow descriptors"
+      }
+    },
+    "required": ["flows"]
+  },
+  "error_codes": [
+    {
+      "code": "UNAUTHENTICATED",
+      "reason": "No valid session or token expired beyond silent refresh"
+    },
+    {
+      "code": "INSUFFICIENT_PERMISSION",
+      "reason": "User lacks kestra.flow.read role"
+    },
+    {
+      "code": "UPSTREAM_ERROR",
+      "reason": "Kestra API responded with error (status code mapped)"
+    }
+  ],
+  "kestra_api": {
+    "method": "GET",
+    "path": "/api/v1/flows",
+    "query_params": ["namespace"],
+    "auth_header": "Bearer {kestra_api_token}"
+  }
+}

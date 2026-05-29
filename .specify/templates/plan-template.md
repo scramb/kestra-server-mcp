@@ -40,7 +40,16 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- **Kestra API Scope Gate**: Confirm planned MCP capabilities map to concrete
+  Kestra API operations (not documentation scraping workflows).
+- **Security-First Gate**: Define trust boundaries, input validation strategy,
+  secret handling, and attack-aware failure behavior.
+- **Identity Gate**: Document OAuth 2.1 with Microsoft Entra flow, including
+  token acquisition, refresh behavior, and required scopes.
+- **Authorization Gate**: Define deny-by-default behavior and explicit
+  permission mapping per tool.
+- **Transport Gate**: Enforce HTTPS as primary transport and justify any uv
+  fallback with equivalent security guarantees.
 
 ## Project Structure
 
