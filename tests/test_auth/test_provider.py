@@ -25,6 +25,7 @@ def oidc_config():
         authority="https://login.microsoftonline.com/test-tenant",
         jwks_uri="https://login.microsoftonline.com/test-tenant/discovery/v2.0/keys",
         issuer="https://login.microsoftonline.com/test-tenant/v2.0",
+        scopes=["openid", "profile"],
     )
 
 

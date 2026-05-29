@@ -18,6 +18,7 @@ def test_oidc_config():
         authority="https://test-provider.example.com",
         jwks_uri="https://test-provider.example.com/discovery/keys",
         issuer="https://test-provider.example.com",
+        scopes=["openid", "profile"],
     )
 
 
