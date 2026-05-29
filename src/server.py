@@ -45,8 +45,7 @@ def _build_tool_definitions() -> list[types.Tool]:
                     "token": {
                         "type": "string",
                         "description": (
-                            "Your Kestra API token (from Kestra UI -> "
-                            "Administration -> Users)."
+                            "Your Kestra API token (from Kestra UI -> Administration -> Users)."
                         ),
                     },
                 },
