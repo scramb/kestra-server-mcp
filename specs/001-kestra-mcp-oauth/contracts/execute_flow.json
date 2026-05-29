@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "execute_flow",
+  "description": "Starts execution of a flow. Requires kestra.flow.execute role.",
+  "permissions": {
+    "required_roles": ["kestra.flow.execute"],
+    "visible_when": "user has kestra.flow.execute role"
+  },
+  "input": {
+    "type": "object",
+    "properties": {
+      "namespace": {
+        "type": "string",
+        "description": "Flow namespace"
+      },
+      "flow_id": {
+        "type": "string",
+        "description": "Flow ID"
+      },
+      "inputs": {
+        "type": "object",
+        "description": "Optional flow input values as key-value pairs"
+      }
+    },
+    "required": ["namespace", "flow_id"]
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "id": { "type": "string", "description": "Execution ID" },
+      "namespace": { "type": "string", "description": "Flow namespace" },
+      "flow_id": { "type": "string", "description": "Flow ID" },
+      "flow_revision": { "type": "integer", "description": "Flow revision used" },
+      "state": {
+        "type": "object",
+        "properties": {
+          "current": { "type": "string", "description": "Current execution state" },
+          "histories": {
+            "type": "array",
+            "description": "State transition history"
+          }
+        }
+      },
+      "inputs": { "type": "object", "description": "Inputs used for this execution" },
+      "url": { "type": "string", "description": "Link to Kestra UI for this execution" }
+    },
+    "required": ["id", "namespace", "flow_id", "state"]
+  },
+  "error_codes": [
+    {
+      "code": "UNAUTHENTICATED",
+      "reason": "No valid session or token expired beyond silent refresh"
+    },
+    {
+      "code": "INSUFFICIENT_PERMISSION",
+      "reason": "User lacks kestra.flow.execute role"
+    },
+    {
+      "code": "NOT_FOUND",
+      "reason": "Flow with given namespace/id does not exist"
+    },
+    {
+      "code": "UPSTREAM_ERROR",
+      "reason": "Kestra API responded with error (status code mapped)"
+    }
+  ],
+  "kestra_api": {
+    "method": "POST",
+    "path": "/api/v1/executions/{namespace}/{flow_id}",
+    "query_params": [],
+    "body": "form-encoded inputs",
+    "auth_header": "Bearer {kestra_api_token}"
+  }
+}

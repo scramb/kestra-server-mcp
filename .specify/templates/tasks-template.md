@@ -156,6 +156,13 @@ Examples of foundational tasks (adjust based on your project):
 - [ ] TXXX Performance optimization across all stories
 - [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
 - [ ] TXXX Security hardening
+- [ ] TXXX Define and validate permission matrix for all tools (required scopes,
+      denied scopes, failure modes)
+- [ ] TXXX Add negative-path security tests for missing/invalid tokens and
+      insufficient scopes
+- [ ] TXXX Verify OAuth 2.1 + Microsoft Entra integration paths (acquire,
+      refresh, revoke/fail)
+- [ ] TXXX Enforce HTTPS-primary transport and validate uv fallback parity
 - [ ] TXXX Run quickstart.md validation
 
 ---

@@ -92,6 +92,13 @@
 - **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
 - **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
 - **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-006**: MCP tool behavior MUST map to explicit Kestra API operations and
+  documented request/response contracts.
+- **FR-007**: Authentication MUST use OAuth 2.1 integrated with Microsoft Entra.
+- **FR-008**: Authorization MUST be deny-by-default with explicit
+  permission-scope mapping per tool.
+- **FR-009**: Network communication MUST use HTTPS as primary transport; any uv
+  fallback MUST preserve equivalent security controls.
 
 *Example of marking unclear requirements:*
 

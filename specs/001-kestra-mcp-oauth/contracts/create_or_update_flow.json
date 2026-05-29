@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "create_or_update_flow",
+  "description": "Creates or updates a flow from a YAML definition. Requires kestra.flow.write role.",
+  "permissions": {
+    "required_roles": ["kestra.flow.write"],
+    "visible_when": "user has kestra.flow.write role"
+  },
+  "input": {
+    "type": "object",
+    "properties": {
+      "source": {
+        "type": "string",
+        "description": "Flow definition as YAML string, including id and namespace fields"
+      }
+    },
+    "required": ["source"]
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "id": { "type": "string", "description": "Flow ID" },
+      "namespace": { "type": "string", "description": "Flow namespace" },
+      "revision": { "type": "integer", "description": "New revision number" },
+      "source": { "type": "string", "description": "Stored flow YAML source" }
+    },
+    "required": ["id", "namespace", "revision"]
+  },
+  "error_codes": [
+    {
+      "code": "UNAUTHENTICATED",
+      "reason": "No valid session or token expired beyond silent refresh"
+    },
+    {
+      "code": "INSUFFICIENT_PERMISSION",
+      "reason": "User lacks kestra.flow.write role"
+    },
+    {
+      "code": "INVALID_YAML",
+      "reason": "The provided source is not valid YAML"
+    },
+    {
+      "code": "UPSTREAM_ERROR",
+      "reason": "Kestra API responded with error (status code mapped)"
+    }
+  ],
+  "kestra_api": {
+    "method": "POST",
+    "path": "/api/v1/flows",
+    "content_type": "application/x-yaml",
+    "body": "{source}",
+    "query_params": [],
+    "auth_header": "Bearer {kestra_api_token}"
+  }
+}

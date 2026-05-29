@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "name": "auth_status",
+  "description": "Reports whether the current user is authenticated and what tool permissions are granted. Requires no specific Entra role.",
+  "permissions": {
+    "required_roles": [],
+    "visible_when": "always"
+  },
+  "input": {
+    "type": "object",
+    "properties": {},
+    "required": []
+  },
+  "output": {
+    "type": "object",
+    "properties": {
+      "authenticated": {
+        "type": "boolean",
+        "description": "Whether the user has a valid authenticated session"
+      },
+      "identity": {
+        "type": "string",
+        "description": "User principal name if authenticated, null otherwise"
+      },
+      "tenant_id": {
+        "type": "string",
+        "description": "Entra tenant ID if authenticated, null otherwise"
+      },
+      "permissions": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "List of granted permission domains (e.g., flow.read, flow.write, flow.execute)"
+      },
+      "available_tools": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "List of MCP tool names the user is authorized to use"
+      }
+    },
+    "required": ["authenticated"]
+  },
+  "error_codes": [],
+  "kestra_api": null
+}
