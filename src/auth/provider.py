@@ -6,22 +6,17 @@ and we issue our own self-signed JWT access tokens carrying the Entra
 user identity.
 """
 
-import secrets
-from typing import Any
 from urllib.parse import urlencode
-
-from pydantic import AnyHttpUrl
 
 from mcp.server.auth.provider import (
     AccessToken,
     AuthorizationCode,
     AuthorizationParams,
     AuthorizeError,
-    OAuthAuthorizationServerProvider,
     RefreshToken,
-    TokenError,
 )
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
+from pydantic import AnyHttpUrl
 
 from src.auth.stores import AuthCodeStore, AuthSessionStore, ClientStore, RefreshTokenStore
 from src.auth.token_factory import (

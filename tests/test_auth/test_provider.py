@@ -1,10 +1,9 @@
 """Tests for EntraAuthProvider."""
 
 import pytest
-from pydantic import AnyHttpUrl
-
 from mcp.server.auth.provider import AuthorizationParams
 from mcp.shared.auth import OAuthClientInformationFull, OAuthToken
+from pydantic import AnyHttpUrl
 
 from src.auth.provider import EntraAuthProvider
 from src.auth.stores import (
@@ -178,7 +177,9 @@ class TestAccessTokenValidation:
 class TestRefreshTokenFlow:
     async def test_store_and_load_refresh(self, provider, registered_client):
         await provider.register_client(registered_client)
-        provider._refresh.store("raw-refresh", registered_client.client_id, "user-1", ["kestra.read"])
+        provider._refresh.store(
+            "raw-refresh", registered_client.client_id, "user-1", ["kestra.read"]
+        )
 
         rt = await provider.load_refresh_token(registered_client, "raw-refresh")
         assert rt is not None
@@ -187,7 +188,9 @@ class TestRefreshTokenFlow:
 
     async def test_exchange_refresh_rotates_tokens(self, provider, registered_client):
         await provider.register_client(registered_client)
-        provider._refresh.store("old-refresh", registered_client.client_id, "user-1", ["kestra.read"])
+        provider._refresh.store(
+            "old-refresh", registered_client.client_id, "user-1", ["kestra.read"]
+        )
 
         rt = await provider.load_refresh_token(registered_client, "old-refresh")
         result = await provider.exchange_refresh_token(registered_client, rt, ["kestra.read"])
