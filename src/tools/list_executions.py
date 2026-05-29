@@ -1,24 +1,18 @@
-"""get_flow MCP tool — retrieves a single flow with YAML source."""
+"""list_executions MCP tool -- lists executions for a flow."""
 
 from src.client.kestra_client import KestraError
 from src.server import get_kestra_client
 
 
 async def handle(arguments: dict) -> dict:
-    """Get a single flow by namespace and ID."""
+    """List executions for a specific flow."""
     kestra_client = get_kestra_client()
     namespace = arguments["namespace"]
     flow_id = arguments["flow_id"]
 
     try:
-        result = await kestra_client.get_flow(namespace, flow_id)
+        result = await kestra_client.list_executions(namespace, flow_id)
     except KestraError as e:
-        if e.status_code == 404:
-            return {
-                "error": True,
-                "code": "NOT_FOUND",
-                "message": f"Flow '{namespace}/{flow_id}' not found",
-            }
         return {
             "error": True,
             "code": "UPSTREAM_ERROR",
@@ -26,4 +20,6 @@ async def handle(arguments: dict) -> dict:
             "message": str(e),
         }
 
+    if isinstance(result, list):
+        return {"executions": result}
     return result

@@ -1,71 +1,34 @@
-"""auth_status MCP tool — reports authentication state and permissions."""
+"""auth_status MCP tool -- reports authentication state."""
 
-from typing import TYPE_CHECKING
+import os
 
-from mcp.server import Server
-
-from src.auth.permissions import (
-    get_identity,
-    map_claims_to_permissions,
-    map_claims_to_tools,
-)
-
-if TYPE_CHECKING:
-    from src.auth.oauth import SessionManager
+from src.auth.session import current_user_id, get_current_token
 
 
-def get_auth_status(
-    identity: str | None = None,
-    session_manager: "SessionManager | None" = None,
-) -> dict:
-    """Return auth status for a given session identity.
-
-    If identity is None, returns unauthenticated state.
-    session_manager can be injected for testing; if None, uses the global.
-    """
-    if session_manager is None:
-        from src.server import get_session_manager
-
-        session_manager = get_session_manager()
-
-    if identity is None:
-        return {
-            "authenticated": False,
-            "identity": None,
-            "tenant_id": None,
-            "permissions": [],
-            "available_tools": ["auth_status"],
-        }
-
-    session = session_manager.get_session(identity)
-    if session is None:
-        return {
-            "authenticated": False,
-            "identity": None,
-            "tenant_id": None,
-            "permissions": [],
-            "available_tools": ["auth_status"],
-        }
-
-    claims = session["claims"]
-    identity_info = get_identity(claims)
+async def handle(_arguments: dict) -> dict:
+    """Report whether a user-bound Kestra token is available and show all tools."""
+    try:
+        token = get_current_token()
+    except PermissionError:
+        token = ""
     return {
-        "authenticated": True,
-        "identity": identity_info.get("name") or identity_info.get("sub"),
-        "tenant_id": identity_info.get("tid"),
-        "permissions": map_claims_to_permissions(claims),
-        "available_tools": map_claims_to_tools(claims),
+        "authenticated": bool(current_user_id.get()),
+        "token_configured": bool(token),
+        "api_url": os.getenv("KESTRA_API_URL", ""),
+        "available_tools": [
+            "auth_status",
+            "register_kestra_token",
+            "search_namespaces",
+            "list_flows",
+            "get_flow",
+            "create_or_update_flow",
+            "execute_flow",
+            "get_execution",
+            "list_executions",
+            "kill_execution",
+            "search_triggers",
+            "list_apps",
+            "get_app",
+            "create_app",
+        ],
     }
-
-
-def register_auth_status(server: Server) -> None:
-    """Register the auth_status tool on the MCP server."""
-
-    @server.tool()
-    async def auth_status() -> dict:
-        """Check your authentication status and available tool permissions.
-
-        Returns whether you are authenticated, your identity, and which
-        MCP tools you are authorized to use based on your Entra roles.
-        """
-        return get_auth_status(identity=None)

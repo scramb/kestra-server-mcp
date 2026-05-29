@@ -1,7 +1,7 @@
 [project]
 name = "kestra-mcp"
 version = "0.1.0"
-description = "MCP server for Kestra workflow orchestration with Entra OAuth authentication"
+description = "MCP server for Kestra workflow orchestration"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 readme = "README.md"
@@ -10,6 +10,7 @@ dependencies = [
     "httpx>=0.28.0",
     "pyjwt[crypto]>=2.8.0",
     "msal>=1.28.0",
+    "cryptography>=42.0",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0",
 ]

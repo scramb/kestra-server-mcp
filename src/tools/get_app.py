@@ -1,22 +1,22 @@
-"""get_execution MCP tool — retrieves execution details."""
+"""get_app MCP tool -- gets details of a Kestra app."""
 
 from src.client.kestra_client import KestraError
 from src.server import get_kestra_client
 
 
 async def handle(arguments: dict) -> dict:
-    """Get execution details by ID."""
+    """Get a single app by UID."""
     kestra_client = get_kestra_client()
-    execution_id = arguments["execution_id"]
+    uid = arguments["uid"]
 
     try:
-        result = await kestra_client.get_execution(execution_id)
+        result = await kestra_client.get_app(uid)
     except KestraError as e:
         if e.status_code == 404:
             return {
                 "error": True,
                 "code": "NOT_FOUND",
-                "message": f"Execution '{execution_id}' not found",
+                "message": f"App '{uid}' not found",
             }
         return {
             "error": True,

@@ -1,16 +1,16 @@
-"""list_flows MCP tool — lists flows visible to the user."""
+"""create_app MCP tool -- creates a new Kestra app."""
 
 from src.client.kestra_client import KestraError
 from src.server import get_kestra_client
 
 
 async def handle(arguments: dict) -> dict:
-    """List flows, optionally filtered by namespace."""
+    """Create a new app from JSON data."""
     kestra_client = get_kestra_client()
-    namespace = arguments.get("namespace")
+    app_data = arguments["app_data"]
 
     try:
-        result = await kestra_client.list_flows(namespace)
+        result = await kestra_client.create_app(app_data)
     except KestraError as e:
         return {
             "error": True,
@@ -19,6 +19,4 @@ async def handle(arguments: dict) -> dict:
             "message": str(e),
         }
 
-    if isinstance(result, list):
-        return {"flows": result}
-    return {"flows": result.get("results", [])}
+    return result

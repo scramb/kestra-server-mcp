@@ -1,16 +1,15 @@
-"""list_flows MCP tool — lists flows visible to the user."""
+"""list_apps MCP tool -- lists Kestra apps from the catalog."""
 
 from src.client.kestra_client import KestraError
 from src.server import get_kestra_client
 
 
-async def handle(arguments: dict) -> dict:
-    """List flows, optionally filtered by namespace."""
+async def handle(_arguments: dict) -> dict:
+    """List available apps from the catalog."""
     kestra_client = get_kestra_client()
-    namespace = arguments.get("namespace")
 
     try:
-        result = await kestra_client.list_flows(namespace)
+        result = await kestra_client.list_apps()
     except KestraError as e:
         return {
             "error": True,
@@ -20,5 +19,5 @@ async def handle(arguments: dict) -> dict:
         }
 
     if isinstance(result, list):
-        return {"flows": result}
-    return {"flows": result.get("results", [])}
+        return {"apps": result}
+    return result
