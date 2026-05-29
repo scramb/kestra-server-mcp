@@ -34,13 +34,19 @@ def _build_tool_definitions() -> list[types.Tool]:
     return [
         types.Tool(
             name="register_kestra_token",
-            description="Register your personal Kestra API token. Required before using any Kestra tools. Call this after authenticating to store your Kestra API token for this session.",
+            description=(
+                "Register your personal Kestra API token. Required before using any Kestra tools. "
+                "Call this after authenticating to store your Kestra API token for this session."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
                     "token": {
                         "type": "string",
-                        "description": "Your Kestra API token (from Kestra UI -> Administration -> Users).",
+                        "description": (
+                            "Your Kestra API token (from Kestra UI -> "
+                            "Administration -> Users)."
+                        ),
                     },
                 },
                 "required": ["token"],
@@ -48,7 +54,10 @@ def _build_tool_definitions() -> list[types.Tool]:
         ),
         types.Tool(
             name="auth_status",
-            description="Check your authentication status and available tool permissions. Returns whether you are authenticated and which MCP tools are available.",
+            description=(
+                "Check your authentication status and available tool permissions. "
+                "Returns whether you are authenticated and which MCP tools are available."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {},
@@ -98,7 +107,10 @@ def _build_tool_definitions() -> list[types.Tool]:
         ),
         types.Tool(
             name="create_or_update_flow",
-            description="Create or update a Kestra flow from a YAML definition. The source must be valid YAML containing at minimum 'id' and 'namespace' fields.",
+            description=(
+                "Create or update a Kestra flow from a YAML definition. "
+                "The source must be valid YAML containing at minimum 'id' and 'namespace' fields."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -112,7 +124,9 @@ def _build_tool_definitions() -> list[types.Tool]:
         ),
         types.Tool(
             name="execute_flow",
-            description="Execute a Kestra flow. Optionally pass input values to the flow execution.",
+            description=(
+                "Execute a Kestra flow. Optionally pass input values to the flow execution."
+            ),
             inputSchema={
                 "type": "object",
                 "properties": {
@@ -242,7 +256,6 @@ def create_server() -> Server:
 
     # Import tool handlers
     from src.tools.auth_status import handle as auth_status_handle
-    from src.tools.register_token import handle as register_token_handle
     from src.tools.create_app import handle as create_app_handle
     from src.tools.create_or_update import handle as create_or_update_handle
     from src.tools.execute_flow import handle as execute_flow_handle
@@ -253,6 +266,7 @@ def create_server() -> Server:
     from src.tools.list_apps import handle as list_apps_handle
     from src.tools.list_executions import handle as list_executions_handle
     from src.tools.list_flows import handle as list_flows_handle
+    from src.tools.register_token import handle as register_token_handle
     from src.tools.search_namespaces import handle as search_namespaces_handle
     from src.tools.search_triggers import handle as search_triggers_handle
 
@@ -309,7 +323,6 @@ async def run_streamable_http() -> None:
     import os
 
     import uvicorn
-    from mcp.server.auth.provider import ProviderTokenVerifier
     from mcp.server.auth.routes import (
         create_auth_routes,
         create_protected_resource_routes,
@@ -419,7 +432,12 @@ async def run_streamable_http() -> None:
             # MCP endpoint
             Route("/mcp", endpoint=_MCPEndpoint(session_manager.handle_request)),
             # Entra ID callback
-            Route("/oauth/entra-callback", endpoint=entra_callback, methods=["GET"], name="entra_callback"),
+            Route(
+                "/oauth/entra-callback",
+                endpoint=entra_callback,
+                methods=["GET"],
+                name="entra_callback",
+            ),
             # Kestra API token management
             Route("/kestra-token", endpoint=kestra_routes["store_token"], methods=["POST"]),
             Route("/kestra-token/remove", endpoint=kestra_routes["remove_token"], methods=["POST"]),

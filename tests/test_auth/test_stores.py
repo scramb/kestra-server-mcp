@@ -3,9 +3,8 @@
 import time
 
 import pytest
-from pydantic import AnyHttpUrl
-
 from mcp.shared.auth import OAuthClientInformationFull
+from pydantic import AnyHttpUrl
 
 from src.auth.stores import (
     AuthCodeStore,

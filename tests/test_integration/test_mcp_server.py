@@ -62,7 +62,9 @@ class TestFullMVPJourney:
         )
         async with KestraClient.from_url("http://localhost:8080/api/v1", "test-token") as client:
             with patch("src.tools.execute_flow.get_kestra_client", return_value=client):
-                exec_result = await execute_flow_handle({"namespace": "company.team", "flow_id": "newflow"})
+                exec_result = await execute_flow_handle(
+                    {"namespace": "company.team", "flow_id": "newflow"}
+                )
         assert exec_result["id"] == "exec-001"
 
         # 7. Get execution
