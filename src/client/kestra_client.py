@@ -23,18 +23,15 @@ class KestraClient:
     with the status code and a sanitized reason (no raw response bodies).
     """
 
-    def __init__(self, config: KestraConfig) -> None:
+    def __init__(self, config: KestraConfig, api_token: str = "") -> None:
         self._config = config
-        self._base_url = config.api_url
-        headers = {
-            "Accept": "application/json",
-        }
-        if config.api_token:
-            headers["Authorization"] = f"Bearer {config.api_token}"
+        self._tenant_prefix = f"/{config.tenant}" if config.tenant else ""
+        self._token_override = api_token
         self._client = httpx.AsyncClient(
-            base_url=self._base_url,
-            headers=headers,
+            base_url=config.api_url,
+            headers={"Accept": "application/json"},
             timeout=30.0,
+            verify=config.verify_ssl,
         )
 
     async def __aenter__(self):
@@ -47,8 +44,20 @@ class KestraClient:
         await self._client.aclose()
 
     @classmethod
-    def from_url(cls, url: str, api_token: str = "") -> "KestraClient":
-        return cls(KestraConfig(api_url=url.rstrip("/"), api_token=api_token))
+    def from_url(cls, url: str, api_token: str = "", tenant: str = "") -> "KestraClient":
+        return cls(
+            KestraConfig(api_url=url.rstrip("/"), tenant=tenant),
+            api_token=api_token,
+        )
+
+    def _resolve_token(self) -> str:
+        if self._token_override:
+            return self._token_override
+        try:
+            from src.auth.session import get_current_token
+            return get_current_token()
+        except (PermissionError, ImportError):
+            return ""
 
     async def _request(
         self,
@@ -57,8 +66,14 @@ class KestraClient:
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Make an API request and handle errors."""
+        token = self._resolve_token()
+        headers = kwargs.pop("headers", {})
+        if token:
+            headers["Authorization"] = f"Bearer {token}"
         try:
-            resp = await self._client.request(method, path, **kwargs)
+            resp = await self._client.request(
+                method, f"{self._tenant_prefix}{path}", headers=headers or None, **kwargs
+            )
         except httpx.TimeoutException:
             raise KestraError(504, "Kestra API timeout") from None
         except httpx.RequestError as e:
@@ -85,12 +100,13 @@ class KestraClient:
         reason = reason_map.get(resp.status_code, "Unexpected error")
         raise KestraError(resp.status_code, reason)
 
-    async def list_flows(self, namespace: str | None = None) -> dict[str, Any]:
-        """List flows, optionally filtered by namespace."""
-        params = {}
-        if namespace:
-            params["namespace"] = namespace
-        return await self._request("GET", "/flows", params=params or None)
+    async def search_namespaces(self) -> dict[str, Any]:
+        """Search/list all namespaces."""
+        return await self._request("GET", "/namespaces/search")
+
+    async def list_flows(self, namespace: str) -> dict[str, Any]:
+        """List flows in a namespace."""
+        return await self._request("GET", f"/flows/{namespace}")
 
     async def get_flow(self, namespace: str, flow_id: str) -> dict[str, Any]:
         """Get a single flow by namespace and ID."""
@@ -124,6 +140,45 @@ class KestraClient:
     async def get_execution(self, execution_id: str) -> dict[str, Any]:
         """Get execution details by ID."""
         return await self._request("GET", f"/executions/{execution_id}")
+
+    async def list_executions(
+        self, namespace: str, flow_id: str
+    ) -> dict[str, Any]:
+        """List executions for a specific flow."""
+        return await self._request(
+            "GET",
+            "/executions",
+            params={"namespace": namespace, "flowId": flow_id},
+        )
+
+    async def kill_execution(self, execution_id: str) -> dict[str, Any]:
+        """Kill/stop a running execution."""
+        return await self._request("DELETE", f"/executions/{execution_id}")
+
+    async def search_triggers(
+        self, namespace: str | None = None
+    ) -> dict[str, Any]:
+        """Search triggers, optionally filtered by namespace."""
+        params = {}
+        if namespace:
+            params["namespace"] = namespace
+        return await self._request("GET", "/triggers/search", params=params or None)
+
+    async def list_apps(self) -> dict[str, Any]:
+        """List apps from the catalog."""
+        return await self._request("GET", "/apps/catalog")
+
+    async def get_app(self, uid: str) -> dict[str, Any]:
+        """Get a single app by UID."""
+        return await self._request("GET", f"/apps/{uid}")
+
+    async def create_app(self, app_data: dict[str, Any]) -> dict[str, Any]:
+        """Create a new app."""
+        return await self._request(
+            "POST",
+            "/apps",
+            json=app_data,
+        )
 
 
 def _sanitize_error(error: Exception) -> str:

@@ -1,16 +1,16 @@
-"""get_execution MCP tool — retrieves execution details."""
+"""kill_execution MCP tool -- stops a running execution."""
 
 from src.client.kestra_client import KestraError
 from src.server import get_kestra_client
 
 
 async def handle(arguments: dict) -> dict:
-    """Get execution details by ID."""
+    """Kill/stop a running execution."""
     kestra_client = get_kestra_client()
     execution_id = arguments["execution_id"]
 
     try:
-        result = await kestra_client.get_execution(execution_id)
+        result = await kestra_client.kill_execution(execution_id)
     except KestraError as e:
         if e.status_code == 404:
             return {
@@ -25,4 +25,4 @@ async def handle(arguments: dict) -> dict:
             "message": str(e),
         }
 
-    return result
+    return result if result else {"status": "killed", "execution_id": execution_id}

@@ -1,23 +1,15 @@
 """execute_flow MCP tool — starts execution of a flow."""
 
-from mcp.server import Server
-
-from src.client.kestra_client import KestraClient, KestraError
+from src.client.kestra_client import KestraError
 from src.server import get_kestra_client
 
 
-async def handle_execute_flow(
-    namespace: str,
-    flow_id: str,
-    inputs: dict | None = None,
-    kestra_client: KestraClient | None = None,
-) -> dict:
-    """Execute a Kestra flow.
-
-    Requires kestra.flow.execute role. Deny-by-default.
-    """
-    if kestra_client is None:
-        kestra_client = get_kestra_client()
+async def handle(arguments: dict) -> dict:
+    """Execute a Kestra flow."""
+    kestra_client = get_kestra_client()
+    namespace = arguments["namespace"]
+    flow_id = arguments["flow_id"]
+    inputs = arguments.get("inputs")
 
     try:
         result = await kestra_client.execute_flow(namespace, flow_id, inputs)
@@ -36,23 +28,3 @@ async def handle_execute_flow(
         }
 
     return result
-
-
-def register_execute_flow(server: Server) -> None:
-    @server.tool()
-    async def execute_flow(
-        namespace: str,
-        flow_id: str,
-        inputs: dict | None = None,
-    ) -> dict:
-        """Execute a Kestra flow.
-
-        Requires the 'kestra.flow.execute' Entra role. Optionally pass
-        input values to the flow execution.
-
-        Args:
-            namespace: The flow namespace (e.g., 'company.team').
-            flow_id: The flow ID to execute.
-            inputs: Optional key-value pairs for flow inputs.
-        """
-        return await handle_execute_flow(namespace=namespace, flow_id=flow_id, inputs=inputs)

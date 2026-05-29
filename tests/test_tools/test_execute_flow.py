@@ -1,9 +1,11 @@
 """Tests for execute_flow tool."""
 
+from unittest.mock import patch
+
 import pytest
 
 from src.client.kestra_client import KestraClient
-from src.tools.execute_flow import handle_execute_flow
+from src.tools.execute_flow import handle
 
 
 class TestExecuteFlow:
@@ -20,12 +22,9 @@ class TestExecuteFlow:
                 "url": "http://localhost:8080/ui/executions/company.team/myflow/exec-001",
             },
         )
-        async with KestraClient.from_url(
-            "http://localhost:8080/api/v1", api_token="test-token"
-        ) as client:
-            result = await handle_execute_flow(
-                namespace="company.team", flow_id="myflow", kestra_client=client
-            )
+        async with KestraClient.from_url("http://localhost:8080/api/v1", "test-token") as client:
+            with patch("src.tools.execute_flow.get_kestra_client", return_value=client):
+                result = await handle({"namespace": "company.team", "flow_id": "myflow"})
         assert result["id"] == "exec-001"
         assert result["state"]["current"] == "CREATED"
 
@@ -36,15 +35,13 @@ class TestExecuteFlow:
             method="POST",
             json={"id": "exec-002", "state": {"current": "CREATED"}},
         )
-        async with KestraClient.from_url(
-            "http://localhost:8080/api/v1", api_token="test-token"
-        ) as client:
-            result = await handle_execute_flow(
-                namespace="company.team",
-                flow_id="myflow",
-                inputs={"greeting": "hello"},
-                kestra_client=client,
-            )
+        async with KestraClient.from_url("http://localhost:8080/api/v1", "test-token") as client:
+            with patch("src.tools.execute_flow.get_kestra_client", return_value=client):
+                result = await handle({
+                    "namespace": "company.team",
+                    "flow_id": "myflow",
+                    "inputs": {"greeting": "hello"},
+                })
         assert result["id"] == "exec-002"
 
     @pytest.mark.asyncio
@@ -54,12 +51,9 @@ class TestExecuteFlow:
             method="POST",
             status_code=404,
         )
-        async with KestraClient.from_url(
-            "http://localhost:8080/api/v1", api_token="test-token"
-        ) as client:
-            result = await handle_execute_flow(
-                namespace="company.team", flow_id="nonexistent", kestra_client=client
-            )
+        async with KestraClient.from_url("http://localhost:8080/api/v1", "test-token") as client:
+            with patch("src.tools.execute_flow.get_kestra_client", return_value=client):
+                result = await handle({"namespace": "company.team", "flow_id": "nonexistent"})
         assert result["error"] is True
         assert result["code"] == "NOT_FOUND"
 
@@ -70,11 +64,8 @@ class TestExecuteFlow:
             method="POST",
             status_code=500,
         )
-        async with KestraClient.from_url(
-            "http://localhost:8080/api/v1", api_token="test-token"
-        ) as client:
-            result = await handle_execute_flow(
-                namespace="company.team", flow_id="myflow", kestra_client=client
-            )
+        async with KestraClient.from_url("http://localhost:8080/api/v1", "test-token") as client:
+            with patch("src.tools.execute_flow.get_kestra_client", return_value=client):
+                result = await handle({"namespace": "company.team", "flow_id": "myflow"})
         assert result["error"] is True
         assert result["code"] == "UPSTREAM_ERROR"

@@ -1,76 +1,71 @@
 """Tests for auth_status tool."""
 
+import os
+from unittest.mock import patch
 
-from src.tools.auth_status import get_auth_status
+import pytest
 
-
-class TestAuthStatusUnauthenticated:
-    def test_returns_unauthenticated_when_identity_none(self, session_manager):
-        result = get_auth_status(identity=None, session_manager=session_manager)
-        assert result["authenticated"] is False
-        assert result["identity"] is None
-        assert result["tenant_id"] is None
-        assert result["permissions"] == []
-        assert result["available_tools"] == ["auth_status"]
-
-    def test_returns_unauthenticated_when_session_not_found(self, session_manager):
-        result = get_auth_status(identity="nonexistent-user", session_manager=session_manager)
-        assert result["authenticated"] is False
-        assert result["available_tools"] == ["auth_status"]
+from src.auth.session import current_kestra_token
+from src.tools.auth_status import handle
 
 
-class TestAuthStatusAuthenticated:
-    def test_returns_authenticated_with_roles(
-        self, session_manager, full_claims, test_entra_config
-    ):
-        token_result = {
-            "access_token": "fake-access",
-            "refresh_token": "fake-refresh",
-        }
-        identity = session_manager.create_session(
-            full_claims, token_result, test_entra_config
-        )
+class TestAuthStatus:
+    @pytest.mark.asyncio
+    async def test_reports_unauthenticated_when_no_token(self):
+        token = current_kestra_token.set("")
+        try:
+            with patch.dict(
+                os.environ,
+                {"KESTRA_API_URL": "http://kestra:8080/api/v1"},
+                clear=True,
+            ):
+                result = await handle({})
+            assert result["authenticated"] is False
+            assert result["token_configured"] is False
+            assert result["api_url"] == "http://kestra:8080/api/v1"
+        finally:
+            current_kestra_token.reset(token)
 
-        result = get_auth_status(identity=identity, session_manager=session_manager)
-        assert result["authenticated"] is True
-        assert result["identity"] is not None
-        assert result["tenant_id"] == "test-tenant-id"
-        assert "flow.read" in result["permissions"]
-        assert "flow.write" in result["permissions"]
-        assert "flow.execute" in result["permissions"]
-        assert "auth_status" in result["available_tools"]
+    @pytest.mark.asyncio
+    async def test_reports_authenticated_when_token_set(self):
+        token = current_kestra_token.set("some-user-kestra-token")
+        try:
+            with patch.dict(
+                os.environ,
+                {"KESTRA_API_URL": "http://kestra:8080/api/v1"},
+                clear=True,
+            ):
+                result = await handle({})
+            assert result["authenticated"] is True
+            assert result["token_configured"] is True
+        finally:
+            current_kestra_token.reset(token)
 
-    def test_read_only_user_sees_read_tools(
-        self, session_manager, read_only_claims, test_entra_config
-    ):
-        token_result = {
-            "access_token": "fake-access",
-            "refresh_token": "fake-refresh",
-        }
-        identity = session_manager.create_session(
-            read_only_claims, token_result, test_entra_config
-        )
-
-        result = get_auth_status(identity=identity, session_manager=session_manager)
-        assert result["authenticated"] is True
-        assert result["permissions"] == ["flow.read"]
-        assert "list_flows" in result["available_tools"]
-        assert "get_flow" in result["available_tools"]
-        assert "create_or_update_flow" not in result["available_tools"]
-        assert "execute_flow" not in result["available_tools"]
-
-    def test_no_roles_user_sees_only_auth_status(
-        self, session_manager, no_role_claims, test_entra_config
-    ):
-        token_result = {
-            "access_token": "fake-access",
-            "refresh_token": "fake-refresh",
-        }
-        identity = session_manager.create_session(
-            no_role_claims, token_result, test_entra_config
-        )
-
-        result = get_auth_status(identity=identity, session_manager=session_manager)
-        assert result["authenticated"] is True
-        assert result["permissions"] == []
-        assert result["available_tools"] == ["auth_status"]
+    @pytest.mark.asyncio
+    async def test_all_tools_listed(self):
+        token = current_kestra_token.set("")
+        try:
+            with patch.dict(
+                os.environ,
+                {"KESTRA_API_URL": "http://kestra:8080/api/v1"},
+                clear=True,
+            ):
+                result = await handle({})
+            expected = {
+                "auth_status",
+                "search_namespaces",
+                "list_flows",
+                "get_flow",
+                "create_or_update_flow",
+                "execute_flow",
+                "get_execution",
+                "list_executions",
+                "kill_execution",
+                "search_triggers",
+                "list_apps",
+                "get_app",
+                "create_app",
+            }
+            assert set(result["available_tools"]) == expected
+        finally:
+            current_kestra_token.reset(token)
