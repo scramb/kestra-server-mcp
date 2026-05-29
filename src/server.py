@@ -30,6 +30,7 @@ def get_config() -> Config:
 
 # === Tool Definitions ===
 
+
 def _build_tool_definitions() -> list[types.Tool]:
     return [
         types.Tool(
@@ -44,8 +45,7 @@ def _build_tool_definitions() -> list[types.Tool]:
                     "token": {
                         "type": "string",
                         "description": (
-                            "Your Kestra API token (from Kestra UI -> "
-                            "Administration -> Users)."
+                            "Your Kestra API token (from Kestra UI -> Administration -> Users)."
                         ),
                     },
                 },
@@ -296,21 +296,37 @@ def create_server() -> Server:
         """Dispatch tool call to the correct handler."""
         handler = TOOL_HANDLERS.get(name)
         if handler is None:
-            return [types.TextContent(type="text", text=json.dumps({
-                "error": True,
-                "code": "NOT_FOUND",
-                "message": f"Unknown tool: {name}",
-            }, indent=2))]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {
+                            "error": True,
+                            "code": "NOT_FOUND",
+                            "message": f"Unknown tool: {name}",
+                        },
+                        indent=2,
+                    ),
+                )
+            ]
 
         try:
             result = await handler(arguments)
         except Exception as e:
             logger.exception("Tool %s failed", name)
-            return [types.TextContent(type="text", text=json.dumps({
-                "error": True,
-                "code": "UPSTREAM_ERROR",
-                "message": str(e),
-            }, indent=2))]
+            return [
+                types.TextContent(
+                    type="text",
+                    text=json.dumps(
+                        {
+                            "error": True,
+                            "code": "UPSTREAM_ERROR",
+                            "message": str(e),
+                        },
+                        indent=2,
+                    ),
+                )
+            ]
 
         return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
@@ -349,17 +365,17 @@ async def run_streamable_http() -> None:
     session_manager = StreamableHTTPSessionManager(app=server)
     token_store = TokenStore.from_config(_config.encryption_key)
     from src.tools.register_token import set_token_store
+
     set_token_store(token_store)
     from src.auth.session import set_session_token_store
+
     set_session_token_store(token_store)
 
     # --- Compute URLs ---
     host = _config.server.host
     port = _config.server.port
     issuer_url = os.getenv("AUTH_SERVER_ISSUER_URL", f"http://{host}:{port}")
-    entra_callback_url = os.getenv(
-        "OIDC_REDIRECT_URI", f"{issuer_url}/oauth/entra-callback"
-    )
+    entra_callback_url = os.getenv("OIDC_REDIRECT_URI", f"{issuer_url}/oauth/entra-callback")
     access_token_ttl = int(os.getenv("ACCESS_TOKEN_TTL_SECONDS", "3600"))
 
     issuer = AnyHttpUrl(issuer_url)
@@ -449,9 +465,7 @@ async def run_streamable_http() -> None:
     app = AuthMiddleware(app, provider, token_store)
 
     cfg = _config.server
-    uvicorn_config = uvicorn.Config(
-        app, host=cfg.host, port=cfg.port, log_level="info"
-    )
+    uvicorn_config = uvicorn.Config(app, host=cfg.host, port=cfg.port, log_level="info")
     uv_server = uvicorn.Server(uvicorn_config)
     await uv_server.serve()
 
@@ -460,9 +474,7 @@ async def run_stdio() -> None:
     """Run the MCP server with stdio transport."""
     server = create_server()
     async with stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream, write_stream, server.create_initialization_options()
-        )
+        await server.run(read_stream, write_stream, server.create_initialization_options())
 
 
 def main() -> None:
@@ -518,6 +530,7 @@ def _handle_cli(cfg: Config, args: list[str]) -> None:
 
     elif args[0] == "generate-key":
         from cryptography.fernet import Fernet
+
         print(Fernet.generate_key().decode())
 
     else:

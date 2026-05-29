@@ -25,8 +25,10 @@ class ClientStore:
             client = self._clients.get(client_id)
             if client is None:
                 return None
-            if (client.client_secret_expires_at is not None
-                    and client.client_secret_expires_at < int(time.time())):
+            if (
+                client.client_secret_expires_at is not None
+                and client.client_secret_expires_at < int(time.time())
+            ):
                 self._clients.pop(client_id, None)
                 return None
             return client
@@ -130,9 +132,7 @@ class RefreshTokenStore:
         self._tokens: dict[str, dict[str, Any]] = {}
         self._lock = Lock()
 
-    def store(
-        self, raw_token: str, client_id: str, entra_user_id: str, scopes: list[str]
-    ) -> None:
+    def store(self, raw_token: str, client_id: str, entra_user_id: str, scopes: list[str]) -> None:
         hashed = hashlib.sha256(raw_token.encode()).hexdigest()
         now = int(time.time())
         with self._lock:

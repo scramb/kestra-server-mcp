@@ -55,6 +55,7 @@ class KestraClient:
             return self._token_override
         try:
             from src.auth.session import get_current_token
+
             return get_current_token()
         except (PermissionError, ImportError):
             return ""
@@ -77,9 +78,7 @@ class KestraClient:
         except httpx.TimeoutException:
             raise KestraError(504, "Kestra API timeout") from None
         except httpx.RequestError as e:
-            raise KestraError(
-                503, f"Kestra unavailable: {_sanitize_error(e)}"
-            ) from e
+            raise KestraError(503, f"Kestra unavailable: {_sanitize_error(e)}") from e
 
         if resp.is_success:
             return resp.json() if resp.content else {}
@@ -141,9 +140,7 @@ class KestraClient:
         """Get execution details by ID."""
         return await self._request("GET", f"/executions/{execution_id}")
 
-    async def list_executions(
-        self, namespace: str, flow_id: str
-    ) -> dict[str, Any]:
+    async def list_executions(self, namespace: str, flow_id: str) -> dict[str, Any]:
         """List executions for a specific flow."""
         return await self._request(
             "GET",
@@ -155,9 +152,7 @@ class KestraClient:
         """Kill/stop a running execution."""
         return await self._request("DELETE", f"/executions/{execution_id}")
 
-    async def search_triggers(
-        self, namespace: str | None = None
-    ) -> dict[str, Any]:
+    async def search_triggers(self, namespace: str | None = None) -> dict[str, Any]:
         """Search triggers, optionally filtered by namespace."""
         params = {}
         if namespace:

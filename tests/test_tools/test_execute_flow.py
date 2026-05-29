@@ -37,11 +37,13 @@ class TestExecuteFlow:
         )
         async with KestraClient.from_url("http://localhost:8080/api/v1", "test-token") as client:
             with patch("src.tools.execute_flow.get_kestra_client", return_value=client):
-                result = await handle({
-                    "namespace": "company.team",
-                    "flow_id": "myflow",
-                    "inputs": {"greeting": "hello"},
-                })
+                result = await handle(
+                    {
+                        "namespace": "company.team",
+                        "flow_id": "myflow",
+                        "inputs": {"greeting": "hello"},
+                    }
+                )
         assert result["id"] == "exec-002"
 
     @pytest.mark.asyncio
