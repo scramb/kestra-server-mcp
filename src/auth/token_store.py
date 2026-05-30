@@ -17,13 +17,13 @@ class TokenStore:
 
     def __init__(self, encryption_key: bytes, file_path: str | Path | None = None):
         self._fernet = Fernet(__import__("base64").urlsafe_b64encode(encryption_key))
-        self._file_path = Path(file_path) if file_path else Path(".kestra-tokens.json")
+        self._file_path = Path(file_path) if file_path else Path("/tmp/.kestra-tokens.json")
         self._lock = threading.RLock()
 
     @classmethod
     def from_config(cls, encryption_key: bytes) -> "TokenStore":
         """Create from global config encryption key."""
-        path = Path(os.getenv("KESTRA_TOKEN_STORE", ".kestra-tokens.json"))
+        path = Path(os.getenv("KESTRA_TOKEN_STORE", "/tmp/.kestra-tokens.json"))
         return cls(encryption_key, file_path=path)
 
     def _read(self) -> dict[str, str]:
