@@ -462,7 +462,7 @@ async def run_streamable_http() -> None:
     )
 
     # Wrap with Kestra token resolution middleware (only intercepts /mcp)
-    app = AuthMiddleware(app, provider, token_store)
+    app = AuthMiddleware(app, provider, token_store, issuer_url)
 
     cfg = _config.server
     uvicorn_config = uvicorn.Config(app, host=cfg.host, port=cfg.port, log_level="info")

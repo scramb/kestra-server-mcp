@@ -115,10 +115,11 @@ class AuthMiddleware:
     Kestra token resolution happens at access time via get_current_token().
     """
 
-    def __init__(self, app, provider, token_store: TokenStore):
+    def __init__(self, app, provider, token_store: TokenStore, public_url: str = ""):
         self.app = app
         self.provider = provider
         self.token_store = token_store
+        self._public_url = public_url
 
     async def __call__(self, scope, receive, send):
         if scope["type"] != "http" or scope.get("path", "").rstrip("/") != "/mcp":
@@ -137,10 +138,20 @@ class AuthMiddleware:
                 finally:
                     current_user_id.reset(uid_token)
                 return
-            # Invalid token — let the session_manager reject with proper OAuth headers
+            # Invalid token — return OAuth discovery
 
-        # No token or invalid — let session_manager handle OAuth discovery/flow
-        await self.app(scope, receive, send)
+        # Return MCP OAuth 2.0 discovery response (RFC 9728 §3)
+        from starlette.responses import JSONResponse
+
+        public_url = self._public_url or f"https://{_get_header(scope, 'host')}"
+        www_auth = f'Bearer resource_metadata="{public_url}/mcp", auth_server="{public_url}"'
+        response = JSONResponse(
+            {"error": "UNAUTHENTICATED",
+             "message": "Valid Bearer token required. See WWW-Authenticate header for OAuth metadata."},
+            status_code=401,
+            headers={"WWW-Authenticate": www_auth},
+        )
+        await response(scope, receive, send)
 
 
 def _get_header(scope, name: str) -> str | None:
@@ -158,13 +169,3 @@ def _extract_bearer(header: str | None) -> str | None:
     if len(parts) == 2 and parts[0].lower() == "bearer":
         return parts[1]
     return None
-
-
-def _unauthorized_response():
-    from starlette.responses import JSONResponse
-
-    return JSONResponse(
-        {"error": "UNAUTHENTICATED", "message": "Valid OIDC Bearer token required"},
-        status_code=401,
-        headers={"WWW-Authenticate": "Bearer"},
-    )
