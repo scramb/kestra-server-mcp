@@ -146,8 +146,10 @@ class AuthMiddleware:
         public_url = self._public_url or f"https://{_get_header(scope, 'host')}"
         www_auth = f'Bearer resource_metadata="{public_url}/mcp", auth_server="{public_url}"'
         response = JSONResponse(
-            {"error": "UNAUTHENTICATED",
-             "message": "Valid Bearer token required. See WWW-Authenticate header for OAuth metadata."},
+            {
+                "error": "UNAUTHENTICATED",
+                "message": "Valid Bearer token required. See WWW-Authenticate for OAuth metadata.",
+            },
             status_code=401,
             headers={"WWW-Authenticate": www_auth},
         )
