@@ -30,16 +30,9 @@ def set_session_token_store(store: TokenStore) -> None:
 
 def get_current_token() -> str:
     user_id = current_user_id.get()
-    if not user_id:
-        raise PermissionError("UNAUTHENTICATED: No user session. Authenticate via OIDC first.")
-    if _token_store is None:
-        raise PermissionError("UNAUTHENTICATED: Token store not initialized.")
-    token = _token_store.get_token(user_id)
-    if not token:
-        raise PermissionError(
-            "UNAUTHENTICATED: No Kestra token registered. Call register_kestra_token first."
-        )
-    return token
+    if not user_id or _token_store is None:
+        return ""
+    return _token_store.get_token(user_id) or ""
 
 
 def validate_oidc_token(token: str, oidc: OidcConfig) -> dict[str, Any] | None:
@@ -135,28 +128,19 @@ class AuthMiddleware:
         auth_header = _get_header(scope, "authorization")
         bearer_token = _extract_bearer(auth_header)
 
-        if not bearer_token:
-            response = _unauthorized_response()
-            await response(scope, receive, send)
-            return
+        if bearer_token:
+            access_token = await self.provider.load_access_token(bearer_token)
+            if access_token is not None and access_token.entra_user_id:
+                uid_token = current_user_id.set(access_token.entra_user_id)
+                try:
+                    await self.app(scope, receive, send)
+                finally:
+                    current_user_id.reset(uid_token)
+                return
+            # Invalid token — let the session_manager reject with proper OAuth headers
 
-        access_token = await self.provider.load_access_token(bearer_token)
-        if access_token is None:
-            response = _unauthorized_response()
-            await response(scope, receive, send)
-            return
-
-        user_id = access_token.entra_user_id
-        if not user_id:
-            response = _unauthorized_response()
-            await response(scope, receive, send)
-            return
-
-        uid_token = current_user_id.set(user_id)
-        try:
-            await self.app(scope, receive, send)
-        finally:
-            current_user_id.reset(uid_token)
+        # No token or invalid — let session_manager handle OAuth discovery/flow
+        await self.app(scope, receive, send)
 
 
 def _get_header(scope, name: str) -> str | None:
