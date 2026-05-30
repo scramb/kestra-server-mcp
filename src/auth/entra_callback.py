@@ -27,6 +27,7 @@ def create_entra_callback_handler(
     oidc: OidcConfig,
     auth_session_store: AuthSessionStore,
     auth_code_store: AuthCodeStore,
+    redirect_uri: str,
 ):
     async def handle(request: Request):
         entra_code = request.query_params.get("code")
@@ -57,7 +58,7 @@ def create_entra_callback_handler(
         result = app.acquire_token_by_authorization_code(
             code=entra_code,
             scopes=[s for s in oidc.scopes if s not in _RESERVED_SCOPES],
-            redirect_uri=str(request.url_for("entra_callback")),
+            redirect_uri=redirect_uri,
         )
         if "error" in result:
             logger.error("Entra token exchange failed: %s", result.get("error"))

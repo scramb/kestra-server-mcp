@@ -423,7 +423,7 @@ async def run_streamable_http() -> None:
 
     # --- Entra callback handler ---
     entra_callback = create_entra_callback_handler(
-        _config.oidc, auth_session_store, auth_code_store
+        _config.oidc, auth_session_store, auth_code_store, entra_callback_url
     )
 
     class _MCPEndpoint:
