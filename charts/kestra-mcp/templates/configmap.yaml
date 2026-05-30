@@ -23,3 +23,9 @@ data:
   OIDC_ISSUER: {{ .Values.config.oidc.issuer | quote }}
   {{- end }}
   OIDC_SCOPES: {{ .Values.config.oidc.scopes | quote }}
+  {{- if .Values.config.server.publicUrl }}
+  AUTH_SERVER_ISSUER_URL: {{ .Values.config.server.publicUrl | quote }}
+  {{- end }}
+  {{- if .Values.config.oidc.redirectUri }}
+  OIDC_REDIRECT_URI: {{ .Values.config.oidc.redirectUri | quote }}
+  {{- end }}
