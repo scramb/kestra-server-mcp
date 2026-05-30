@@ -25,7 +25,13 @@ data:
   OIDC_SCOPES: {{ .Values.config.oidc.scopes | quote }}
   {{- if .Values.config.server.publicUrl }}
   AUTH_SERVER_ISSUER_URL: {{ .Values.config.server.publicUrl | quote }}
+  {{- else if and .Values.ingress.enabled .Values.ingress.hosts }}
+  {{- $host := (index .Values.ingress.hosts 0).host }}
+  AUTH_SERVER_ISSUER_URL: {{ printf "https://%s" $host | quote }}
   {{- end }}
   {{- if .Values.config.oidc.redirectUri }}
   OIDC_REDIRECT_URI: {{ .Values.config.oidc.redirectUri | quote }}
+  {{- else if and .Values.ingress.enabled .Values.ingress.hosts }}
+  {{- $host := (index .Values.ingress.hosts 0).host }}
+  OIDC_REDIRECT_URI: {{ printf "https://%s/oauth/entra-callback" $host | quote }}
   {{- end }}

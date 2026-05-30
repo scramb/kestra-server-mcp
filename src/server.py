@@ -374,7 +374,7 @@ async def run_streamable_http() -> None:
     # --- Compute URLs ---
     host = _config.server.host
     port = _config.server.port
-    issuer_url = os.getenv("AUTH_SERVER_ISSUER_URL", f"http://{host}:{port}")
+    issuer_url = os.getenv("AUTH_SERVER_ISSUER_URL", f"https://{host}:{port}")
     entra_callback_url = os.getenv("OIDC_REDIRECT_URI", f"{issuer_url}/oauth/entra-callback")
     access_token_ttl = int(os.getenv("ACCESS_TOKEN_TTL_SECONDS", "3600"))
 
