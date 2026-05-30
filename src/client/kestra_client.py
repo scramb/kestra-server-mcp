@@ -32,6 +32,7 @@ class KestraClient:
             headers={"Accept": "application/json"},
             timeout=30.0,
             verify=config.verify_ssl,
+            follow_redirects=True,
         )
 
     async def __aenter__(self):
