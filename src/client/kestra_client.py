@@ -25,7 +25,7 @@ class KestraClient:
 
     def __init__(self, config: KestraConfig, api_token: str = "") -> None:
         self._config = config
-        self._tenant_prefix = f"/{config.tenant}" if config.tenant else ""
+        self._tenant = config.tenant
         self._token_override = api_token
         self._client = httpx.AsyncClient(
             base_url=config.api_url,
@@ -72,9 +72,13 @@ class KestraClient:
         headers = kwargs.pop("headers", {})
         if token:
             headers["Authorization"] = f"Bearer {token}"
+        if self._tenant:
+            params = kwargs.setdefault("params", {})
+            if isinstance(params, dict):
+                params.setdefault("tenant", self._tenant)
         try:
             resp = await self._client.request(
-                method, f"{self._tenant_prefix}{path}", headers=headers or None, **kwargs
+                method, path, headers=headers or None, **kwargs
             )
         except httpx.TimeoutException:
             raise KestraError(504, "Kestra API timeout") from None
