@@ -3,7 +3,7 @@ name = "kestra-mcp"
 version = "0.1.0"
 description = "MCP server for Kestra workflow orchestration"
 requires-python = ">=3.11"
-license = {text = "MIT"}
+license = {text = "Apache-2.0"}
 readme = "README.md"
 dependencies = [
     "mcp>=1.0.0",

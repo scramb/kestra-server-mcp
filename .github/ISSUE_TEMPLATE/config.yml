@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Kestra Community
+    url: https://kestra.io/slack
+    about: Join the Kestra community Slack for questions and discussion.
+  - name: Kestra Documentation
+    url: https://kestra.io/docs
+    about: Read the Kestra documentation for workflow orchestration.
